@@ -21,29 +21,54 @@ const AuthForm = () => {
         const enteredPassword = passwordInputRef.current.value;
 
         try {
-            const response = await fetch(
-                "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBufVmhmqPNp85ECeITp0cXyf88lk80p4w",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        email: eneteredEmail,
-                        password: enteredPassword,
-                        returnSecureToken: true,
-                    }),
+            if (!isLogin) {
+                const response = await fetch(
+                    "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBufVmhmqPNp85ECeITp0cXyf88lk80p4w",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            email: eneteredEmail,
+                            password: enteredPassword,
+                            returnSecureToken: true,
+                        }),
+                    }
+                );
+
+                setIsLoading(false);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("signing up");
+                    console.log(data);
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error.message);
                 }
-            );
-
-            setIsLoading(false);
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log(data);
             } else {
-                const error = await response.json();
-                throw new Error(error.error.message);
+                const response = await fetch(
+                    "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBufVmhmqPNp85ECeITp0cXyf88lk80p4w",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            email: eneteredEmail,
+                            password: enteredPassword,
+                            returnSecureToken: true,
+                        }),
+                    }
+                );
+                setIsLoading(false);
+                if (response.ok) {
+                    console.log("logging in");
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error.message);
+                }
             }
         } catch (error) {
             alert(error);
