@@ -74,6 +74,10 @@ const AuthForm = () => {
                     throw new Error(error.error.message);
                 }
             }
+
+            //clear fields
+            emailInputRef.current.value = "";
+            passwordInputRef.current.value = "";
         } catch (error) {
             alert(error);
         }
