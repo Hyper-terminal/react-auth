@@ -1,9 +1,12 @@
 import { useState, useRef, useContext } from "react";
 import AuthContext from "../../store/auth-context";
+import { useHistory } from "react-router-dom";
 
 import classes from "./AuthForm.module.css";
 
 const AuthForm = () => {
+    const history = useHistory();
+
     const [isLogin, setIsLogin] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -24,57 +27,40 @@ const AuthForm = () => {
         const enteredPassword = passwordInputRef.current.value;
 
         try {
+            let url = "";
+
             if (!isLogin) {
-                const response = await fetch(
-                    "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBufVmhmqPNp85ECeITp0cXyf88lk80p4w",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            email: eneteredEmail,
-                            password: enteredPassword,
-                            returnSecureToken: true,
-                        }),
-                    }
-                );
-
-                setIsLoading(false);
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    authCtx.onAddToken(data.idToken);
-                } else {
-                    const error = await response.json();
-                    throw new Error(error.error.message);
-                }
+                url =
+                    "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBufVmhmqPNp85ECeITp0cXyf88lk80p4w";
             } else {
-                const response = await fetch(
-                    "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBufVmhmqPNp85ECeITp0cXyf88lk80p4w",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            email: eneteredEmail,
-                            password: enteredPassword,
-                            returnSecureToken: true,
-                        }),
-                    }
-                );
-                setIsLoading(false);
-                if (response.ok) {
-                    const data = await response.json();
-                    authCtx.onAddToken(data.idToken);
-                } else {
-                    const error = await response.json();
-                    throw new Error(error.error.message);
-                }
+                url =
+                    "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBufVmhmqPNp85ECeITp0cXyf88lk80p4w";
             }
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: eneteredEmail,
+                    password: enteredPassword,
+                    returnSecureToken: true,
+                }),
+            });
 
+            setIsLoading(false);
+
+            if (response.ok) {
+                const data = await response.json();
+
+                authCtx.onAddToken(data.idToken);
+
+                // redirecting
+                history.replace("/");
+            } else {
+                const error = await response.json();
+                throw new Error(error.error.message);
+            }
             //clear fields
             emailInputRef.current.value = "";
             passwordInputRef.current.value = "";
